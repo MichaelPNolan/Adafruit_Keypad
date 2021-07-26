@@ -1,6 +1,4 @@
 #include "Adafruit_Keypad.h"
-#include "Adafruit_MCP23017.h"
-#include <Wire.h>
 
 #define _KEY_PRESSED_POS (1)
 #define _KEY_PRESSED (1UL << _KEY_PRESSED_POS)
