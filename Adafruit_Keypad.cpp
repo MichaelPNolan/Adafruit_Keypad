@@ -1,4 +1,6 @@
 #include "Adafruit_Keypad.h"
+#include "Adafruit_MCP23017.h"
+#include <Wire.h>
 
 #define _KEY_PRESSED_POS (1)
 #define _KEY_PRESSED (1UL << _KEY_PRESSED_POS)
@@ -23,8 +25,10 @@
     @param  numCols the number of columns on the keypad
 */
 /**************************************************************************/
+
+
 Adafruit_Keypad::Adafruit_Keypad(byte *userKeymap, byte *row, byte *col,
-                                 int numRows, int numCols) {
+                                 int numRows, int numCols, Adafruit_MCP23017 *exp) {
   _userKeymap = userKeymap;
   _row = row;
   _col = col;
@@ -32,6 +36,7 @@ Adafruit_Keypad::Adafruit_Keypad(byte *userKeymap, byte *row, byte *col,
   _numCols = numCols;
 
   _keystates = NULL;
+  _exp = exp; //adding a gpio expander of typeMCP23017 - read for pins above 100 translate them by subtract 100 and use expander
 }
 
 /**************************************************************************/
@@ -67,9 +72,12 @@ volatile byte *Adafruit_Keypad::getKeyState(byte key) {
 /**************************************************************************/
 void Adafruit_Keypad::tick() {
   uint8_t evt;
-  for (int i = 0; i < _numCols; i++) {
-    digitalWrite(_col[i], HIGH);
-  }
+  for (int i = 0; i < _numCols; i++){
+    if(_col[i]>99) //read an expander gpio (>>99 the subtract 100 and use mcp.digitalWrite( ...
+      _exp.digitalWrite((_col[i]-100, HIGH);
+    else //read a normal gpio
+      digitalWrite(_col[i], HIGH);
+   }
 
   int i = 0;
   for (int c = 0; c < _numCols; c++) {
@@ -77,7 +85,11 @@ void Adafruit_Keypad::tick() {
     delayMicroseconds(_KEYPAD_SETTLING_DELAY);
     for (int r = 0; r < _numRows; r++) {
       i = r * _numCols + c;
-      bool pressed = !digitalRead(_row[r]);
+      bool pressed;
+      if(_row[r]>99)
+         pressed = !_exp.digitalRead(_row[r]-100);
+      else
+         pressed = !digitalRead(_row[r]);
       // Serial.print((int)pressed);
       volatile byte *state = _keystates + i;
       byte currentState = *state;
@@ -112,14 +124,23 @@ void Adafruit_Keypad::tick() {
 void Adafruit_Keypad::begin() {
   _keystates = (volatile byte *)malloc(_numRows * _numCols);
   memset((void *)_keystates, 0, _numRows * _numCols);
-
+  _exp.begin();
   for (int i = 0; i < _numCols; i++) {
-    pinMode(_col[i], OUTPUT);
-    digitalWrite(_col[i], HIGH);
+     if(_col[i]>99){ //read an expander gpio (>>99 the subtract 100 and use mcp.digitalWrite( ...
+       _exp.pinMode(_col[i]-100, OUTPUT);
+       _exp.digitalWrite((_col[i]-100, HIGH);
+                        
+    } else {
+        pinMode(_col[i], OUTPUT);
+        digitalWrite(_col[i], HIGH);
+    }
   }
 
   for (int i = 0; i < _numRows; i++) {
-    pinMode(_row[i], INPUT_PULLUP);
+    if(_row[i]>99)
+      _exp.pinMode(_row[i]-100, INPUT_PULLUP);
+    else
+      pinMode(_row[i], INPUT_PULLUP);
   }
 }
 
