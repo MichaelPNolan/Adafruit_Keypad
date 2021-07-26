@@ -35,7 +35,7 @@ union keypadEvent {
 class Adafruit_Keypad {
 public:
   Adafruit_Keypad(byte *userKeymap, byte *row, byte *col, int numRows,
-                  int numCols);
+                  int numCols,Adafruit_MCP23017 *exp);
   ~Adafruit_Keypad();
   void begin();
 

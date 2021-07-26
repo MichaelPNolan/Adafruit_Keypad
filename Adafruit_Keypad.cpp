@@ -72,7 +72,7 @@ void Adafruit_Keypad::tick() {
   uint8_t evt;
   for (int i = 0; i < _numCols; i++){
     if(_col[i]>99) //read an expander gpio (>>99 the subtract 100 and use mcp.digitalWrite( ...
-      _exp.digitalWrite((_col[i]-100, HIGH);
+      _exp->digitalWrite(_col[i]-100, HIGH);
     else //read a normal gpio
       digitalWrite(_col[i], HIGH);
    }
@@ -85,7 +85,7 @@ void Adafruit_Keypad::tick() {
       i = r * _numCols + c;
       bool pressed;
       if(_row[r]>99)
-         pressed = !_exp.digitalRead(_row[r]-100);
+         pressed = !_exp->digitalRead(_row[r]-100);
       else
          pressed = !digitalRead(_row[r]);
       // Serial.print((int)pressed);
@@ -110,7 +110,11 @@ void Adafruit_Keypad::tick() {
       *state = currentState;
     }
     // Serial.println("");
-    digitalWrite(_col[c], HIGH);
+    if(_col[c]>99) //read an expander gpio (>>99 the subtract 100 and use mcp.digitalWrite( ...
+      _exp->digitalWrite(_col[c]-100, HIGH);
+    else //read a normal gpio
+      digitalWrite(_col[c], HIGH);
+    
   }
 }
 
@@ -122,11 +126,11 @@ void Adafruit_Keypad::tick() {
 void Adafruit_Keypad::begin() {
   _keystates = (volatile byte *)malloc(_numRows * _numCols);
   memset((void *)_keystates, 0, _numRows * _numCols);
-  _exp.begin();
+  _exp->begin();
   for (int i = 0; i < _numCols; i++) {
      if(_col[i]>99){ //read an expander gpio (>>99 the subtract 100 and use mcp.digitalWrite( ...
-       _exp.pinMode(_col[i]-100, OUTPUT);
-       _exp.digitalWrite((_col[i]-100, HIGH);
+       _exp->pinMode(_col[i]-100, OUTPUT);
+       _exp->digitalWrite(_col[i]-100, HIGH);
                         
     } else {
         pinMode(_col[i], OUTPUT);
@@ -136,7 +140,7 @@ void Adafruit_Keypad::begin() {
 
   for (int i = 0; i < _numRows; i++) {
     if(_row[i]>99)
-      _exp.pinMode(_row[i]-100, INPUT_PULLUP);
+      _exp->pinMode(_row[i]-100, INPUT_PULLUP);
     else
       pinMode(_row[i], INPUT_PULLUP);
   }
