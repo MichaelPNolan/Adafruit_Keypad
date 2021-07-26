@@ -2,6 +2,8 @@
 #define _ADAFRUIT_KEYPAD_H_
 
 #include "Adafruit_Keypad_Ringbuffer.h"
+#include "Adafruit_MCP23017.h"
+#include <Wire.h>
 #include "Arduino.h"
 #include <string.h>
 
@@ -53,6 +55,7 @@ private:
   byte *_col;
   volatile byte *_keystates;
   Adafruit_Keypad_Ringbuffer _eventbuf;
+  Adafruit_MCP23017 *_exp;
 
   int _numRows;
   int _numCols;
